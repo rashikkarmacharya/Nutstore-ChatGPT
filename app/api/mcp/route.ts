@@ -5,6 +5,7 @@ import { isAuthorized, unauthorized } from "../../../lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const handler = createMcpHandler((server) => {
   server.registerTool("nutstore_list_directory", {
@@ -15,10 +16,10 @@ const handler = createMcpHandler((server) => {
   }));
 
   server.registerTool("nutstore_search_files", {
-    description: "Search Nutstore file and folder names recursively. This searches names and paths, not document contents.",
-    inputSchema: z.object({ query: z.string().min(1), path: z.string().optional(), limit: z.number().int().min(1).max(100).optional() })
-  }, async ({ query, path, limit }) => ({
-    content: [{ type: "text", text: JSON.stringify(await searchFiles(query, path || "/", limit || 50), null, 2) }]
+    description: "Search Nutstore names and text inside supported PDF, Word, Excel, PowerPoint, OpenDocument, and text files. Content scanning is on demand and limited to 40 documents by default (up to 100). Scanned image-only PDFs and legacy .doc/.xls/.ppt files are not supported.",
+    inputSchema: z.object({ query: z.string().min(1), path: z.string().optional(), limit: z.number().int().min(1).max(100).optional(), max_files_to_scan: z.number().int().min(1).max(100).optional() })
+  }, async ({ query, path, limit, max_files_to_scan }) => ({
+    content: [{ type: "text", text: JSON.stringify(await searchFiles(query, path || "/", limit || 50, max_files_to_scan || 40), null, 2) }]
   }));
 
   server.registerTool("nutstore_read_text_file", {

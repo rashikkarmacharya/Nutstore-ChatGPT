@@ -3,6 +3,7 @@ import { isAuthorized, unauthorized } from "../../../../lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 type Context = { params: Promise<{ operation: string }> };
 
@@ -27,7 +28,8 @@ async function run(request: Request, context: Context): Promise<Response> {
         const query = url.searchParams.get("query") || "";
         const path = url.searchParams.get("path") || "/";
         const limit = Number(url.searchParams.get("limit") || 50);
-        data = await searchFiles(query, path, limit);
+        const maxFilesToScan = Number(url.searchParams.get("max_files_to_scan") || 40);
+        data = await searchFiles(query, path, limit, maxFilesToScan);
         break;
       }
       case "read-text":
